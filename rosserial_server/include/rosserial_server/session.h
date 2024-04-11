@@ -140,6 +140,17 @@ public:
 
   void shutdown()
   {
+
+    std::cout << "Sending Tx Stop Request..." << std::endl;
+    uint8_t overhead_bytes = 8;
+    uint16_t length = overhead_bytes;
+    BufferPtr buffer_ptr(new Buffer(length));
+    ros::serialization::OStream stream(&buffer_ptr->at(0), buffer_ptr->size());
+    stream << (uint16_t)0xfeff << (uint16_t)0x0000 << (uint16_t)0x0bff << (uint16_t)0xf400 ;
+    boost::asio::async_write(socket_, boost::asio::buffer(*buffer_ptr),
+    boost::bind(&Session::write_completion_cb, this, boost::asio::placeholders::error, buffer_ptr));
+    std::cout << "Stop..." << std::endl;
+
     if (is_active())
     {
       stop();
